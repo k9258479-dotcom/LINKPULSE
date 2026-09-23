@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-23T05:53:19.860Z",
+  "links": {
+    "link1": {
+      "id": "link1-default",
+      "slug": "link1",
+      "targetUrl": "https://google.com/search?q=updated",
+      "title": "Permanent Link 1 (Sample)",
+      "description": "Maaaring baguhin ang target URL nito anytime sa dashboard nang hindi nagbabago ang link1",
+      "redirectType": 302,
+      "isActive": true,
+      "createdAt": "2026-09-23T05:53:04.156Z",
+      "updatedAt": "2026-09-23T05:53:13.081Z",
+      "clickCount": 15,
+      "lastClickedAt": "2026-09-23T05:53:19.860Z",
+      "tags": [
+        "promo",
+        "sample"
+      ],
+      "forwardQueryParams": true
+    },
+    "promo": {
+      "id": "promo-2026",
+      "slug": "promo",
+      "targetUrl": "https://github.com",
+      "title": "Special Campaign Link",
+      "description": "Halimbawa ng marketing link na dynamic ang destination",
+      "redirectType": 302,
+      "isActive": true,
+      "createdAt": "2026-09-23T05:53:04.156Z",
+      "updatedAt": "2026-09-23T05:53:04.156Z",
+      "clickCount": 28,
+      "lastClickedAt": "2026-09-23T05:53:04.156Z",
+      "tags": [
+        "campaign",
+        "marketing"
+      ],
+      "forwardQueryParams": true
+    }
+  }
+}

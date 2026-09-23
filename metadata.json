@@ -1,0 +1,6 @@
+{
+  "name": "Dynamic Link Redirection Server",
+  "description": "Dynamic short link redirection server with Express backend, live target URL updates, click analytics, and free deployment guides for Render, Vercel, and Cloudflare Workers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
