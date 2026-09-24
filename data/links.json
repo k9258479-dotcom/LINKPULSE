@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-09-24T03:32:05.655Z",
+  "updatedAt": "2026-09-24T03:44:06.730Z",
   "links": {
     "link1": {
       "id": "link1",
@@ -12,7 +12,7 @@
       "isActive": true,
       "createdAt": "2026-09-24T03:27:52.314Z",
       "updatedAt": "2026-09-24T03:27:52.314Z",
-      "clickCount": 0,
+      "clickCount": 2,
       "tags": [
         "nmax-winner",
         "campaign"
@@ -27,7 +27,25 @@
         "moneyPageUrl": "",
         "botVisited": false,
         "botVisitCount": 0
-      }
+      },
+      "lastClickedAt": "2026-09-24T03:44:06.730Z"
+    },
+    "deal711": {
+      "id": "lnk_1790220933404_71r1p",
+      "slug": "deal711",
+      "targetUrl": "https://chatgpt.com",
+      "title": "facebook",
+      "description": "",
+      "redirectType": 302,
+      "isActive": true,
+      "createdAt": "2026-09-24T03:35:33.404Z",
+      "updatedAt": "2026-09-24T03:35:33.404Z",
+      "clickCount": 1,
+      "tags": [
+        "ads"
+      ],
+      "forwardQueryParams": true,
+      "lastClickedAt": "2026-09-24T03:37:21.448Z"
     }
   }
 }

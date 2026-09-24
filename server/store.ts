@@ -15,9 +15,11 @@ import { isMetaCrawlerUserAgent } from './metaService.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const DATA_DIR = isServerless ? '/tmp' : path.join(__dirname, '..', 'data');
 const DATA_FILE = path.join(DATA_DIR, 'links.json');
 const LOGS_FILE = path.join(DATA_DIR, 'logs.json');
+const BUNDLED_DATA_FILE = path.resolve(process.cwd(), 'data', 'links.json');
 
 export const RESERVED_SLUGS = new Set([
   'api',
@@ -58,8 +60,21 @@ class Store {
         fs.mkdirSync(DATA_DIR, { recursive: true });
       }
 
-      if (fs.existsSync(DATA_FILE)) {
-        const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+      // In serverless (e.g. Vercel /tmp), copy bundled data file if DATA_FILE is missing
+      if (isServerless && !fs.existsSync(DATA_FILE) && fs.existsSync(BUNDLED_DATA_FILE)) {
+        try {
+          fs.copyFileSync(BUNDLED_DATA_FILE, DATA_FILE);
+        } catch (copyErr) {
+          console.warn('[Store] Could not copy bundled data to /tmp:', copyErr);
+        }
+      }
+
+      const fileToRead = fs.existsSync(DATA_FILE)
+        ? DATA_FILE
+        : (fs.existsSync(BUNDLED_DATA_FILE) ? BUNDLED_DATA_FILE : null);
+
+      if (fileToRead) {
+        const raw = fs.readFileSync(fileToRead, 'utf-8');
         const parsed: DatabaseSchema = JSON.parse(raw);
         if (parsed && parsed.links) {
           for (const [slug, item] of Object.entries(parsed.links)) {
