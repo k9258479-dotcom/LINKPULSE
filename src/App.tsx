@@ -15,6 +15,7 @@ import {
 import type { LinkItem, OverviewStats, CreateLinkInput, UpdateLinkInput } from './types';
 import type { Lang } from './i18n';
 import { translations } from './i18n';
+import { safeFetchJson } from './utils/api';
 import { Navbar } from './components/Navbar';
 import { StatsCards } from './components/StatsCards';
 import { RedirectTester } from './components/RedirectTester';
@@ -71,22 +72,16 @@ export default function App() {
     try {
       setIsRefreshing(true);
       const [linksRes, statsRes] = await Promise.all([
-        fetch('/api/links'),
-        fetch('/api/stats/overview')
+        safeFetchJson('/api/links'),
+        safeFetchJson('/api/stats/overview')
       ]);
 
-      if (linksRes.ok) {
-        const linksData = await linksRes.json();
-        if (linksData.success && linksData.links) {
-          setLinks(linksData.links);
-        }
+      if (linksRes.ok && linksRes.data?.success && linksRes.data?.links) {
+        setLinks(linksRes.data.links);
       }
 
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        if (statsData.success && statsData.stats) {
-          setStats(statsData.stats);
-        }
+      if (statsRes.ok && statsRes.data?.success && statsRes.data?.stats) {
+        setStats(statsRes.data.stats);
       }
     } catch (err) {
       console.error('Failed to fetch links or stats:', err);
@@ -102,14 +97,13 @@ export default function App() {
   // Create Link
   const handleCreateLink = async (input: CreateLinkInput): Promise<boolean> => {
     try {
-      const res = await fetch('/api/links', {
+      const res = await safeFetchJson('/api/links', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input)
       });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to create link');
+      if (!res.ok || !res.data?.success) {
+        throw new Error(res.error || 'Failed to create link');
       }
 
       showToast(t.createSuccess, 'success');
@@ -124,14 +118,13 @@ export default function App() {
   // Update Target URL anytime
   const handleUpdateLink = async (slug: string, updates: UpdateLinkInput): Promise<boolean> => {
     try {
-      const res = await fetch(`/api/links/${encodeURIComponent(slug)}`, {
+      const res = await safeFetchJson(`/api/links/${encodeURIComponent(slug)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates)
       });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to update link');
+      if (!res.ok || !res.data?.success) {
+        throw new Error(res.error || 'Failed to update link');
       }
 
       showToast(t.updateSuccess, 'success');
@@ -165,12 +158,11 @@ export default function App() {
   // Delete Link
   const handleDeleteLink = async (slug: string) => {
     try {
-      const res = await fetch(`/api/links/${encodeURIComponent(slug)}`, {
+      const res = await safeFetchJson(`/api/links/${encodeURIComponent(slug)}`, {
         method: 'DELETE'
       });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to delete');
+      if (!res.ok || !res.data?.success) {
+        throw new Error(res.error || 'Failed to delete');
       }
 
       showToast(lang === 'tl' ? `Burado na ang /${slug}` : `Deleted /${slug}`, 'success');
@@ -183,14 +175,13 @@ export default function App() {
   // Save Meta Tracking configuration
   const handleSaveMetaTracking = async (slug: string, metaTracking: any): Promise<boolean> => {
     try {
-      const res = await fetch(`/api/links/${encodeURIComponent(slug)}`, {
+      const res = await safeFetchJson(`/api/links/${encodeURIComponent(slug)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ metaTracking })
       });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to update Meta settings');
+      if (!res.ok || !res.data?.success) {
+        throw new Error(res.error || 'Failed to update Meta settings');
       }
       showToast(lang === 'tl' ? 'Na-save ang Meta Review Tracker settings!' : 'Saved Meta Review Tracker settings!', 'success');
       await fetchData();
@@ -204,12 +195,11 @@ export default function App() {
   // Reset Stats
   const handleResetStats = async (slug: string) => {
     try {
-      const res = await fetch(`/api/links/${encodeURIComponent(slug)}/reset`, {
+      const res = await safeFetchJson(`/api/links/${encodeURIComponent(slug)}/reset`, {
         method: 'POST'
       });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to reset stats');
+      if (!res.ok || !res.data?.success) {
+        throw new Error(res.error || 'Failed to reset stats');
       }
       showToast(lang === 'tl' ? `Na-reset ang clicks ng /${slug}` : `Reset clicks for /${slug}`, 'success');
       await fetchData();

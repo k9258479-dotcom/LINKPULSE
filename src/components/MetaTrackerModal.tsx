@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import type { LinkItem, MetaEffectiveStatus } from '../types';
 import type { Lang } from '../i18n';
+import { safeFetchJson } from '../utils/api';
 
 interface Props {
   link: LinkItem | null;
@@ -82,7 +83,7 @@ export const MetaTrackerModal: React.FC<Props> = ({
     setApiCheckResult(null);
 
     try {
-      const res = await fetch('/api/meta/check-status', {
+      const res = await safeFetchJson('/api/meta/check-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -92,7 +93,7 @@ export const MetaTrackerModal: React.FC<Props> = ({
         })
       });
 
-      const data = await res.json();
+      const data = res.data || { success: false, error: res.error || 'Failed to check status' };
       setApiCheckResult(data);
 
       if (data.success && data.effectiveStatus) {
@@ -114,13 +115,14 @@ export const MetaTrackerModal: React.FC<Props> = ({
     setBotSimulationMessage(null);
 
     try {
-      const res = await fetch(`/api/links/${encodeURIComponent(link.slug)}/test-meta-crawler`, {
+      const res = await safeFetchJson(`/api/links/${encodeURIComponent(link.slug)}/test-meta-crawler`, {
         method: 'POST'
       });
-      const data = await res.json();
-      if (data.success) {
-        setBotSimulationMessage(data.reviewLog || 'Meta Crawler visit logged!');
+      if (res.ok && res.data?.success) {
+        setBotSimulationMessage(res.data.reviewLog || 'Meta Crawler visit logged!');
         onRefreshStatus(link.slug);
+      } else {
+        setBotSimulationMessage(res.error || 'Simulation failed');
       }
     } catch (err: any) {
       setBotSimulationMessage(err.message || 'Simulation failed');

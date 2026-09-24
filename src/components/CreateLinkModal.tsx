@@ -3,6 +3,7 @@ import { X, Plus, Sparkles, CheckCircle2, AlertCircle, HelpCircle } from 'lucide
 import type { CreateLinkInput } from '../types';
 import type { Lang } from '../i18n';
 import { translations } from '../i18n';
+import { safeFetchJson } from '../utils/api';
 
 interface Props {
   origin: string;
@@ -40,9 +41,12 @@ export const CreateLinkModal: React.FC<Props> = ({ origin, lang, onClose, onCrea
     setSlugStatus('checking');
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/check-slug/${encodeURIComponent(clean)}`);
-        const data = await res.json();
-        setSlugStatus(data.available ? 'available' : 'taken');
+        const res = await safeFetchJson(`/api/check-slug/${encodeURIComponent(clean)}`);
+        if (res.ok && res.data) {
+          setSlugStatus(res.data.available ? 'available' : 'taken');
+        } else {
+          setSlugStatus('idle');
+        }
       } catch {
         setSlugStatus('idle');
       }

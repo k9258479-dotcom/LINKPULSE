@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Database, Download, Upload, Copy, Check, FileCode, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, Database, Download, Upload, Copy, Check, FileCode, CheckCircle2, AlertCircle, Trash2, RotateCcw, Sparkles } from 'lucide-react';
 import type { Lang } from '../i18n';
+import { safeFetchJson } from '../utils/api';
 
 interface Props {
   lang: Lang;
@@ -12,9 +13,50 @@ export const DatabaseToolsModal: React.FC<Props> = ({ lang, onClose, onRefresh }
   const [copiedSql, setCopiedSql] = useState(false);
   const [importStatus, setImportStatus] = useState<string | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const handleDownload = (format: 'json' | 'sqlite' | 'cloudflare') => {
     window.open(`/api/export/${format}`, '_blank');
+  };
+
+  const handleClearDemoMode = async () => {
+    if (!confirm(lang === 'tl' ? 'Sigurado ka bang nais mong linisin ang Demo Mode at i-ready ang link para sa Production?' : 'Are you sure you want to clear demo mode and set the clean production state?')) {
+      return;
+    }
+    setActionLoading('clear-demo');
+    try {
+      const res = await safeFetchJson('/api/admin/clear-demo', { method: 'POST' });
+      if (res.ok && res.data?.success) {
+        setImportStatus(lang === 'tl' ? 'Matagumpay na nalinis ang Demo Mode! Handa na sa Production.' : 'Demo mode cleared successfully! Ready for production.');
+        onRefresh();
+      } else {
+        setImportStatus(`Error: ${res.error || 'Failed to clear demo mode'}`);
+      }
+    } catch (err: any) {
+      setImportStatus(`Error: ${err.message}`);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleClearAllLogs = async () => {
+    if (!confirm(lang === 'tl' ? 'I-reset ang lahat ng click counters at analytics logs sa 0?' : 'Reset all click counts and analytics logs to 0?')) {
+      return;
+    }
+    setActionLoading('clear-logs');
+    try {
+      const res = await safeFetchJson('/api/admin/clear-all-logs', { method: 'POST' });
+      if (res.ok && res.data?.success) {
+        setImportStatus(lang === 'tl' ? 'Lahat ng clicks at analytics ay na-reset na sa 0!' : 'All clicks and analytics have been reset to 0!');
+        onRefresh();
+      } else {
+        setImportStatus(`Error: ${res.error || 'Failed to reset clicks'}`);
+      }
+    } catch (err: any) {
+      setImportStatus(`Error: ${err.message}`);
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,18 +71,17 @@ export const DatabaseToolsModal: React.FC<Props> = ({ lang, onClose, onRefresh }
 
       const items = Array.isArray(parsed) ? parsed : Object.values(parsed.links || {});
 
-      const res = await fetch('/api/import/json', {
+      const res = await safeFetchJson('/api/import/json', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(items)
       });
-      const data = await res.json();
 
-      if (data.success) {
-        setImportStatus(`Matagumpay na na-import ang ${data.imported} links! (${data.skipped} skipped)`);
+      if (res.ok && res.data?.success) {
+        setImportStatus(`Matagumpay na na-import ang ${res.data.imported} links! (${res.data.skipped} skipped)`);
         onRefresh();
       } else {
-        setImportStatus(`Error: ${data.error}`);
+        setImportStatus(`Error: ${res.error || 'Import failed'}`);
       }
     } catch (err: any) {
       setImportStatus(`Failed to read file: ${err.message}`);
@@ -85,7 +126,7 @@ export const DatabaseToolsModal: React.FC<Props> = ({ lang, onClose, onRefresh }
                 <span className="ml-2 text-xs font-semibold text-emerald-400">JSON Key-Value Store (data/links.json)</span>
               </div>
               <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
-                Atomic Writes Active
+                Production Ready
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-1">
@@ -93,6 +134,50 @@ export const DatabaseToolsModal: React.FC<Props> = ({ lang, onClose, onRefresh }
                 ? 'Naka-save ang lahat ng iyong permanent short links at click logs sa server storage nang awtomatiko sa tuwing may pagbabago o click.'
                 : 'All your permanent short links and click statistics are securely stored with atomic writes on every click or update.'}
             </p>
+          </div>
+
+          {/* Quick Production & Demo Maintenance Actions */}
+          <div className="p-4 rounded-xl bg-gradient-to-r from-blue-950/40 to-slate-900 border border-blue-800/50">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-4 h-4 text-cyan-400" />
+              <h4 className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+                {lang === 'tl' ? 'Production Mode & Cleanup' : 'Production Mode & Cleanup'}
+              </h4>
+            </div>
+            <p className="text-xs text-slate-300 mb-3 leading-relaxed">
+              {lang === 'tl'
+                ? 'I-clear ang sample/demo links at simulan ang malinis na production link (naka-link sa Nmax Winner Munti Disclaimer video) na may 0 clicks.'
+                : 'Clear sample/demo links and activate the clean production state (linked to Nmax Winner Munti Disclaimer) with 0 clicks.'}
+            </p>
+            <div className="flex flex-wrap gap-2.5">
+              <button
+                type="button"
+                onClick={handleClearDemoMode}
+                disabled={actionLoading !== null}
+                className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition shadow-sm disabled:opacity-50"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>
+                  {actionLoading === 'clear-demo'
+                    ? (lang === 'tl' ? 'Nililinis...' : 'Clearing...')
+                    : (lang === 'tl' ? 'Clear Demo Mode (Handa sa Production)' : 'Clear Demo Mode & Go Live')}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleClearAllLogs}
+                disabled={actionLoading !== null}
+                className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium transition border border-slate-700 disabled:opacity-50"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+                <span>
+                  {actionLoading === 'clear-logs'
+                    ? (lang === 'tl' ? 'Niraraser...' : 'Resetting...')
+                    : (lang === 'tl' ? 'I-reset ang Clicks sa 0' : 'Reset All Clicks to 0')}
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Export Options */}

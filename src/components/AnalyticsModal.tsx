@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, BarChart3, Clock, Smartphone, Monitor, Globe, RefreshCw, RotateCcw, Bot, ShieldCheck } from 'lucide-react';
 import type { LinkItem, ClickLog } from '../types';
 import type { Lang } from '../i18n';
+import { safeFetchJson } from '../utils/api';
 
 interface Props {
   link: LinkItem | null;
@@ -20,10 +21,9 @@ export const AnalyticsModal: React.FC<Props> = ({ link, origin, lang, onClose, o
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/links/${link.slug}`);
-      const data = await res.json();
-      if (data.success && data.logs) {
-        setLogs(data.logs);
+      const res = await safeFetchJson(`/api/links/${encodeURIComponent(link.slug)}`);
+      if (res.ok && res.data?.success && res.data?.logs) {
+        setLogs(res.data.logs);
       }
     } catch (err) {
       console.error(err);
