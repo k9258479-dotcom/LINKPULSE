@@ -342,10 +342,26 @@ export const MetaTrackerModal: React.FC<Props> = ({
                     : 'Meta Graph API Response'}
                 </span>
               </div>
-              <p className="text-[11px] mt-1 text-slate-300 font-mono">
+              <p className="text-[11px] mt-1.5 text-slate-200 leading-relaxed break-words">
                 {apiCheckResult.error ||
                   `Ad Name: "${apiCheckResult.name}" | Status: ${apiCheckResult.effectiveStatus}`}
               </p>
+              {!apiCheckResult.success && (
+                <div className="mt-2.5 pt-2 border-t border-rose-800/40 text-[10.5px] text-rose-300/90 space-y-1">
+                  <p className="font-semibold text-rose-200">💡 Mga Dapat Tiyakin para sa Meta Graph API:</p>
+                  <ul className="list-disc pl-4 space-y-0.5 text-slate-300">
+                    <li>
+                      <strong>Token Permission:</strong> Kailangang may <code className="text-cyan-300 bg-slate-900 px-1 rounded">ads_read</code> o <code className="text-cyan-300 bg-slate-900 px-1 rounded">ads_management</code> ang inyong System User Token.
+                    </li>
+                    <li>
+                      <strong>Assign Asset:</strong> Sa Meta Business Manager, kailangang naka-assign ang System User sa inyong <em>Ad Account</em> (Users &gt; System Users &gt; Assign Assets).
+                    </li>
+                    <li>
+                      <strong>Manual Override:</strong> Kung gusto mong mag-switch kaagad ang link (Safe Page vs Money Page), maaari mong piliin nang manu-mano ang status sa ibaba (e.g. <em>ACTIVE</em> o <em>PENDING_REVIEW</em>).
+                    </li>
+                  </ul>
+                </div>
+              )}
             </div>
           )}
 
